@@ -1,15 +1,89 @@
 package flashcards
 
+import java.io.File
+import kotlin.system.exitProcess
+
 val cardList = mutableListOf<Card>()
+  fun action (str: String) {
+     when(str){
+         "add" ->  addFoo()
+         "remove" -> removeFoo()
+         "import" -> importFoo()
+         "export" -> exportFoo()
+         "ask" -> askFoo()
+         "exit" -> exitFoo()
+         else -> println("zalupa")
+     }
+  }
+
+fun exitFoo() {
+        println("Bye bye!")
+    exitProcess(0)
+}
+
+fun askFoo() {
+    println("How many times to ask?")
+    for (i in 0 until readln().toInt()) tiDebil(i, cardList)
+    main()
+}
+
+fun exportFoo() {
+    println("File name:")
+    val importFile = File(readln())
+    for (i in cardList.indices) {
+        importFile.appendText("${cardList[i].term}, " +
+                "${cardList[i].definition}\n")
+    }
+    println("${cardList.size} cards have been saved.")
+    main()
+}
+
+fun importFoo() {
+    println("File name:")
+    val exportFile = File(readln())
+    if (!exportFile.exists()) {
+        println("File not found")
+        main()
+    } else {
+        var count = 0
+        exportFile.forEachLine {
+            cardList.add(
+                Card(
+                    it.substringBefore(","),
+                    it.substringAfter(" ")
+                )
+            )
+        }
+       /// File(fileName).readLines().size  println("")
+        main()
+    }
+}
+
+fun removeFoo() {
+    println("Which card")
+    val str = readln()
+    if (checkRepeat(str)) {
+        cardList.forEach { if (it.term == str) cardList.remove(it) }
+        println("The card has been removed.")
+        main()
+    }else{
+        println("Can't remove \"$str\": there is no such card.")
+        main()
+    }
+}
+
+fun addFoo() {
+    cardList.add(Card().create())
+    println("The pair " +
+            "(\"${cardList.last().term}\":\"${cardList.last().definition}\") " +
+            "has been added.")
+    main()
+}
 
 fun main() {
-  print("Input the number of cards:\n> ")
+  println("Input the action (add, remove, import, export, ask, exit):")
+    action(readln())
 
-  for (i in 1..readln().toInt()) {
-    cardList.add(i-1, Card().create(i))
-  }
-    for (i in 1..cardList.size)
-   tiDebil(i-1, cardList)
 }
 
 fun tiDebil(i: Int, cardList: MutableList<Card>) {
@@ -39,19 +113,20 @@ fun  checkRepeat ( str: String): Boolean{
        return false
 }
 
+
 class Card(var term: String = "", var definition: String= "") {
-    fun create(i: Int): Card {
-        print("Card #$i:\n> ")
+    fun create(): Card {
+        print("The card:\n> ")
           term = readln()
-          while (checkRepeat(term)) {
-              println("The term \"$term\" already exists. Try again:")
-              term = readln()
+      if (checkRepeat(term)) {
+              println("The card \"$term\" already exists.")
+              main()
           }
-        print("The definition for card #$i:\n> ")
+        print("The definition of the card:\n> ")
         definition = readln()
-        while (checkRepeat(definition)) {
-            println("The definition \"$definition\" already exists. Try again:")
-             definition = readln()
+       if (checkRepeat(definition)) {
+            println("The definition \"$definition\" already exists.")
+            main()
             }
         return Card(term, definition)
     }
