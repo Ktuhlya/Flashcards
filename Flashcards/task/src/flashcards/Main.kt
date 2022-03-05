@@ -1,10 +1,26 @@
 package flashcards
 
+import java.io.BufferedWriter
 import java.io.File
 import kotlin.system.exitProcess
 
 val cardList = mutableListOf<Card>()
+val log = mutableListOf<String>()
 
+
+    fun printlnMy(str: String) {
+        log.add(str)
+        println(str)
+    }
+    fun readlnMy(): String {
+        val str = readln()
+        log.add(str)
+        return str
+    }
+    fun printMy(str: String) {
+        log.add(str)
+        print(str)
+    }
 
 
 
@@ -19,51 +35,85 @@ val cardList = mutableListOf<Card>()
          "hardest card" -> shameYouFoo()
          "reset stats" -> resetStatsFoo()
          "exit" -> exitFoo()
-         else -> println("zalupa")
+         else -> printlnMy("zalupa")
      }
   }
 
 fun resetStatsFoo() {
-    TODO("Not yet implemented")
+    cardList.forEach { it.errors = "0" }
+    println("Card statistics have been reset.")
+    main()
 }
 
 fun shameYouFoo() {
-    TODO("Not yet implemented")
+    var max = 0
+    val tempList = mutableListOf<Pair<Int,Int>>()
+    cardList.forEach { tempList.add(Pair(it.errors.toInt(), cardList.indexOf(it))) }
+    tempList.sortBy { it.first }
+    for (i in tempList.indices){
+        if ((tempList.size>1) && (tempList[i].first < tempList.last().first))  tempList.removeAt(i)
+    }
+    if (tempList.isNotEmpty()){
+    if (tempList.last().first ==0){
+        printlnMy("There are no cards with errors.")
+        main()
+    }else{
+    val str1 = if (tempList.size > 1) "cards are" else "card is"
+    val str2 = if (tempList.size > 1) "them" else "it"
+    var str3 = mutableListOf<String>()
+    for (i in tempList.indices) str3.add("\"${cardList[tempList[i].second].term}\"")
+
+    printlnMy("The hardest $str1 ${str3.joinToString(", ")}. " +
+            "You have ${tempList[0].first} errors answering $str2.")
+    main()
+
+}
+    } else{
+        printlnMy("There are no cards with errors.")
+        main()
+    }
 }
 
+
 fun logFoo() {
-    TODO("Not yet implemented")
+    printlnMy("File name:")
+    val logFile = File(readlnMy())
+    logFile.writeText("")
+    printlnMy("The log has been saved.")
+    for (i in log.indices) logFile.appendText("${log[i]}\n")
+
+    main()
 }
 
 fun exitFoo() {
-        println("Bye bye!")
+        printlnMy("Bye bye!")
     exitProcess(0)
 }
 
 fun askFoo() {
-    println("How many times to ask?")
-    for (i in 0 until readln().toInt()) tiDebil(i, cardList)
+    printlnMy("How many times to ask?")
+    for (i in 0 until readlnMy().toInt()) tiDebil(i, cardList)
     main()
 }
 
 fun exportFoo() {
-    println("File name:")
-    val exportFile = File(readln())
+    printlnMy("File name:")
+    val exportFile = File(readlnMy())
     exportFile.writeText("")
     for (i in cardList.indices) {
         exportFile.appendText("${cardList[i].term}, " +
                 cardList[i].definition +
                 ":e:${cardList[i].errors}\n")
     }
-    println("${cardList.size} cards have been saved.")
+    printlnMy("${cardList.size} cards have been saved.")
     main()
 }
 
 fun importFoo() {
-    println("File name:")
-    val importFile = File(readln())
+    printlnMy("File name:")
+    val importFile = File(readlnMy())
     if (!importFile.exists()) {
-        println("File not found")
+        printlnMy("File not found")
         main()
     } else {
        // var count = 0
@@ -73,13 +123,13 @@ fun importFoo() {
             cardList.add(
                 Card(
                     it.substringBefore(", "),
-                    it.substringAfter(", "),
+                    it.substring(it.indexOf(" ")+1,it.indexOf(":")),
                     it.substringAfter(":e:")
 
                 )
             )
         }
-      println("${importFile.readLines().size} cards have been loaded.")
+      printlnMy("${importFile.readLines().size} cards have been loaded.")
 
         main()
     }
@@ -88,54 +138,55 @@ fun importFoo() {
 fun checkFile(str: String) {
     for (i in cardList.indices) {
         if (cardList[i].term == str) cardList.removeAt(i)
+
     }
 
 }
 
 fun removeFoo() {
-    println("Which card")
-    val str = readln()
+    printlnMy("Which card")
+    val str = readlnMy()
     if (checkRepeat(str)) {
         cardList.forEach { if (it.term == str) cardList.remove(it) }
         println("The card has been removed.")
         main()
     }else{
-        println("Can't remove \"$str\": there is no such card.")
+        printlnMy("Can't remove \"$str\": there is no such card.")
         main()
     }
 }
 
 fun addFoo() {
     cardList.add(Card().create())
-    println("The pair " +
+    printlnMy("The pair " +
             "(\"${cardList.last().term}\":\"${cardList.last().definition}\") " +
             "has been added.")
     main()
 }
 
 fun main() {
-  println("Input the action (add, remove, import, export, ask, exit):")
-    action(readln())
+  printlnMy("Input the action (add, remove, import, export, ask, exit):")
+    action(readlnMy())
 
 }
 
 fun tiDebil(i: Int, cardList: MutableList<Card>) {
-    println("Print the definition of \"${cardList[i].term}\":")
-    val str = readln()
-    if (str == cardList[i].definition) println("Correct!")
+    printlnMy("Print the definition of \"${cardList[i].term}\":")
+    val str = readlnMy()
+    if (str == cardList[i].definition) printlnMy("Correct!")
     else {
         if (checkRepeat(str)) {
-            println(
+            printlnMy(
                 "Wrong. The right answer is \"${cardList[i].definition}\", " +
                         "but your answer is " +
                         "correct for \"${checkRepeatAnswer(str)}\"."
             )
             cardList[i].errors = (cardList[i].errors.toInt() +1).toString()
-            println(cardList[i].errors)
+           // printlnMy(cardList[i].errors)
         } else {
-            println("Wrong. The right answer is \"${cardList[i].definition}\".")
-            cardList[i].errors = cardList[i].errors +1
-            println(cardList[i].errors)
+            printlnMy("Wrong. The right answer is \"${cardList[i].definition}\".")
+            cardList[i].errors = (cardList[i].errors.toInt() +1).toString()
+           // printlnMy(cardList[i].errors)
         }
     }
 }
@@ -153,19 +204,25 @@ fun  checkRepeat ( str: String): Boolean{
 
 class Card(var term: String = "", var definition: String = "", var errors: String = "0") {
     fun create(): Card {
-        print("The card:\n> ")
-          term = readln()
+        printlnMy("The card:")
+          term = readlnMy()
       if (checkRepeat(term)) {
-              println("The card \"$term\" already exists.")
+              printlnMy("The card \"$term\" already exists.")
               main()
           }
-        print("The definition of the card:\n> ")
-        definition = readln()
+        printlnMy("The definition of the card:")
+        definition = readlnMy()
        if (checkRepeat(definition)) {
-            println("The definition \"$definition\" already exists.")
+            printlnMy("The definition \"$definition\" already exists.")
             main()
             }
         return Card(term, definition)
     }
+
+
 }
 
+/*
+
+
+ */
