@@ -1,11 +1,12 @@
 package flashcards
 
-import java.io.BufferedWriter
 import java.io.File
 import kotlin.system.exitProcess
 
 val cardList = mutableListOf<Card>()
 val log = mutableListOf<String>()
+var export = false
+var  exportFileArg = ""
 
 
     fun printlnMy(str: String) {
@@ -22,8 +23,6 @@ val log = mutableListOf<String>()
         print(str)
     }
 
-
-
   fun action (str: String) {
      when(str){
          "add" ->  addFoo()
@@ -35,14 +34,14 @@ val log = mutableListOf<String>()
          "hardest card" -> shameYouFoo()
          "reset stats" -> resetStatsFoo()
          "exit" -> exitFoo()
-         else -> printlnMy("zalupa")
+         else -> choNado()
      }
   }
 
 fun resetStatsFoo() {
     cardList.forEach { it.errors = "0" }
     println("Card statistics have been reset.")
-    main()
+    choNado()
 }
 
 fun shameYouFoo() {
@@ -56,24 +55,21 @@ fun shameYouFoo() {
     if (tempList.isNotEmpty()){
     if (tempList.last().first ==0){
         printlnMy("There are no cards with errors.")
-        main()
+        choNado()
     }else{
     val str1 = if (tempList.size > 1) "cards are" else "card is"
     val str2 = if (tempList.size > 1) "them" else "it"
     var str3 = mutableListOf<String>()
     for (i in tempList.indices) str3.add("\"${cardList[tempList[i].second].term}\"")
-
-    printlnMy("The hardest $str1 ${str3.joinToString(", ")}. " +
+        printlnMy("The hardest $str1 ${str3.joinToString(", ")}. " +
             "You have ${tempList[0].first} errors answering $str2.")
-    main()
-
+        choNado()
 }
     } else{
         printlnMy("There are no cards with errors.")
-        main()
+        choNado()
     }
 }
-
 
 fun logFoo() {
     printlnMy("File name:")
@@ -81,19 +77,31 @@ fun logFoo() {
     logFile.writeText("")
     printlnMy("The log has been saved.")
     for (i in log.indices) logFile.appendText("${log[i]}\n")
-
-    main()
+    choNado()
 }
 
 fun exitFoo() {
+    if (!export) {
         printlnMy("Bye bye!")
-    exitProcess(0)
+        exitProcess(0)
+    }else{
+        val exportFile = File(exportFileArg)
+        exportFile.writeText("")
+        for (i in cardList.indices) {
+            exportFile.appendText("${cardList[i].term}, " +
+                    cardList[i].definition +
+                    ":e:${cardList[i].errors}\n")
+        }
+        printlnMy("${cardList.size} cards have been saved.")
+        printMy("Bye bye!")
+        exitProcess(0)
+    }
 }
 
 fun askFoo() {
     printlnMy("How many times to ask?")
     for (i in 0 until readlnMy().toInt()) tiDebil(i, cardList)
-    main()
+    choNado()
 }
 
 fun exportFoo() {
@@ -106,7 +114,7 @@ fun exportFoo() {
                 ":e:${cardList[i].errors}\n")
     }
     printlnMy("${cardList.size} cards have been saved.")
-    main()
+    choNado()
 }
 
 fun importFoo() {
@@ -114,10 +122,8 @@ fun importFoo() {
     val importFile = File(readlnMy())
     if (!importFile.exists()) {
         printlnMy("File not found")
-        main()
+        choNado()
     } else {
-       // var count = 0
-
         importFile.forEachLine {
             checkFile(it.substringBefore(", "))
             cardList.add(
@@ -131,7 +137,7 @@ fun importFoo() {
         }
       printlnMy("${importFile.readLines().size} cards have been loaded.")
 
-        main()
+        choNado()
     }
 }
 
@@ -140,19 +146,23 @@ fun checkFile(str: String) {
         if (cardList[i].term == str) cardList.removeAt(i)
 
     }
-
 }
 
 fun removeFoo() {
+
     printlnMy("Which card")
     val str = readlnMy()
-    if (checkRepeat(str)) {
-        cardList.forEach { if (it.term == str) cardList.remove(it) }
+    try {
+        if (checkRepeat(str)) {
+            cardList.forEach { if (it.term == str) cardList.remove(it) }
+            println("The card has been removed.")
+            choNado()
+        } else {
+            printlnMy("Can't remove \"$str\": there is no such card.")
+            choNado()
+        }
+    } catch ( e: ConcurrentModificationException ){
         println("The card has been removed.")
-        main()
-    }else{
-        printlnMy("Can't remove \"$str\": there is no such card.")
-        main()
     }
 }
 
@@ -161,13 +171,7 @@ fun addFoo() {
     printlnMy("The pair " +
             "(\"${cardList.last().term}\":\"${cardList.last().definition}\") " +
             "has been added.")
-    main()
-}
-
-fun main() {
-  printlnMy("Input the action (add, remove, import, export, ask, exit):")
-    action(readlnMy())
-
+    choNado()
 }
 
 fun tiDebil(i: Int, cardList: MutableList<Card>) {
@@ -201,26 +205,60 @@ fun  checkRepeat ( str: String): Boolean{
        return false
 }
 
-
 class Card(var term: String = "", var definition: String = "", var errors: String = "0") {
     fun create(): Card {
         printlnMy("The card:")
           term = readlnMy()
       if (checkRepeat(term)) {
               printlnMy("The card \"$term\" already exists.")
-              main()
+          choNado()
           }
         printlnMy("The definition of the card:")
         definition = readlnMy()
        if (checkRepeat(definition)) {
             printlnMy("The definition \"$definition\" already exists.")
-            main()
+           choNado()
             }
         return Card(term, definition)
     }
-
-
 }
+fun choNado (){
+
+      printlnMy("Input the action (add, remove, import, export, ask, exit):")
+      action(readlnMy())
+}
+fun main(args: Array<String>) {
+        if (args.isNotEmpty()) {
+            if (args.contains("-export")) {
+              //  println("zalupa")
+                exportFileArg = args[args.indexOf("-export")+1]
+                export = true
+            }
+            if(args.contains("-import")){
+                val importFile = File(args[args.indexOf("-import")+1])
+                if (!importFile.exists()) {
+                    choNado()
+                } else {
+                    importFile.forEachLine {
+                        cardList.add(
+                            Card(
+                                it.substringBefore(", "),
+                                it.substring(it.indexOf(" ")+1,it.indexOf(":")),
+                                it.substringAfter(":e:")
+                            )
+                        )
+                    }
+                    printlnMy("${importFile.readLines().size} cards have been loaded.")
+                    choNado()
+                }
+            }else{
+                choNado()
+            }
+        }else{
+            choNado()
+        }
+}
+
 
 /*
 
