@@ -4,6 +4,10 @@ import java.io.File
 import kotlin.system.exitProcess
 
 val cardList = mutableListOf<Card>()
+
+
+
+
   fun action (str: String) {
      when(str){
          "add" ->  addFoo()
@@ -48,7 +52,8 @@ fun exportFoo() {
     exportFile.writeText("")
     for (i in cardList.indices) {
         exportFile.appendText("${cardList[i].term}, " +
-                "${cardList[i].definition}\n")
+                cardList[i].definition +
+                ":e:${cardList[i].errors}\n")
     }
     println("${cardList.size} cards have been saved.")
     main()
@@ -64,11 +69,13 @@ fun importFoo() {
        // var count = 0
 
         importFile.forEachLine {
-            checkFile(it.substringBefore(","))
+            checkFile(it.substringBefore(", "))
             cardList.add(
                 Card(
-                    it.substringBefore(","),
-                    it.substringAfter(" ")
+                    it.substringBefore(", "),
+                    it.substringAfter(", "),
+                    it.substringAfter(":e:")
+
                 )
             )
         }
@@ -123,8 +130,12 @@ fun tiDebil(i: Int, cardList: MutableList<Card>) {
                         "but your answer is " +
                         "correct for \"${checkRepeatAnswer(str)}\"."
             )
+            cardList[i].errors = (cardList[i].errors.toInt() +1).toString()
+            println(cardList[i].errors)
         } else {
             println("Wrong. The right answer is \"${cardList[i].definition}\".")
+            cardList[i].errors = cardList[i].errors +1
+            println(cardList[i].errors)
         }
     }
 }
@@ -140,7 +151,7 @@ fun  checkRepeat ( str: String): Boolean{
 }
 
 
-class Card(var term: String = "", var definition: String= "") {
+class Card(var term: String = "", var definition: String = "", var errors: String = "0") {
     fun create(): Card {
         print("The card:\n> ")
           term = readln()
