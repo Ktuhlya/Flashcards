@@ -11,10 +11,25 @@ val cardList = mutableListOf<Card>()
          "import" -> importFoo()
          "export" -> exportFoo()
          "ask" -> askFoo()
+         "log" -> logFoo()
+         "hardest card" -> shameYouFoo()
+         "reset stats" -> resetStatsFoo()
          "exit" -> exitFoo()
          else -> println("zalupa")
      }
   }
+
+fun resetStatsFoo() {
+    TODO("Not yet implemented")
+}
+
+fun shameYouFoo() {
+    TODO("Not yet implemented")
+}
+
+fun logFoo() {
+    TODO("Not yet implemented")
+}
 
 fun exitFoo() {
         println("Bye bye!")
