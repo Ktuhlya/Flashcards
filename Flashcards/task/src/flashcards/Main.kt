@@ -29,9 +29,10 @@ fun askFoo() {
 
 fun exportFoo() {
     println("File name:")
-    val importFile = File(readln())
+    val exportFile = File(readln())
+    exportFile.writeText("")
     for (i in cardList.indices) {
-        importFile.appendText("${cardList[i].term}, " +
+        exportFile.appendText("${cardList[i].term}, " +
                 "${cardList[i].definition}\n")
     }
     println("${cardList.size} cards have been saved.")
@@ -40,13 +41,15 @@ fun exportFoo() {
 
 fun importFoo() {
     println("File name:")
-    val exportFile = File(readln())
-    if (!exportFile.exists()) {
+    val importFile = File(readln())
+    if (!importFile.exists()) {
         println("File not found")
         main()
     } else {
-        var count = 0
-        exportFile.forEachLine {
+       // var count = 0
+
+        importFile.forEachLine {
+            checkFile(it.substringBefore(","))
             cardList.add(
                 Card(
                     it.substringBefore(","),
@@ -54,9 +57,17 @@ fun importFoo() {
                 )
             )
         }
-       /// File(fileName).readLines().size  println("")
+      println("${importFile.readLines().size} cards have been loaded.")
+
         main()
     }
+}
+
+fun checkFile(str: String) {
+    for (i in cardList.indices) {
+        if (cardList[i].term == str) cardList.removeAt(i)
+    }
+
 }
 
 fun removeFoo() {
